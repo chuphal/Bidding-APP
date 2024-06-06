@@ -9,6 +9,11 @@ CREATE TABLE users (
 	created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
+-- RESET PASSWORD
+ALTER TABLE users
+ADD COLUMN reset_token TEXT,
+ADD COLUMN reset_token_expires TIMESTAMPTZ;
+
 ALTER TABLE auction_items ADD COLUMN status VARCHAR(50) NOT NULL DEFAULT 'active';
 -- items
 CREATE TABLE auction_items (
@@ -19,7 +24,12 @@ CREATE TABLE auction_items (
 	current_price decimal DEFAULT 0,
 	image_url TEXT,
 	end_time TIMESTAMP NOT NULL,
-	created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+	created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+	owner_id INT,
+	status DEFAULT 'active',
+	CONSTRAINT fk_users_items 
+		FOREIGN KEY (owner_id) 
+			REFERENCES users (id)
 );
 
 -- making the owner and item realation..

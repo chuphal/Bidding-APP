@@ -5,7 +5,7 @@ const authentication = (req, res, next) => {
   const token = req.cookies.jwt;
   // console.log(token);
   if (!token) {
-    throw new UnauthenticatedError("Authentication Invalid");
+    throw new UnauthenticatedError("Authentication Invalid. No token found");
   }
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);

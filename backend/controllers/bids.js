@@ -1,6 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import pool from "../db/dbConfig.js";
 import { BadRequestError, CustomAPIError } from "../errors/index.js";
+import { io, getReceiverSocketId } from "../socket/socket.js";
 
 export const getAllBids = async (req, res) => {
   const { itemId } = req.params;
@@ -45,30 +46,29 @@ export const createBid = async (req, res) => {
     );
   }
 
-  await pool.query(
-    `INSERT INTO bids (item_id, user_id, bid_amount)
-  VALUES ($1, $2, $3 )`,
-    [itemId, userId, bid_amount]
-  );
-
-  // update the notification's to the owner of the item.
   const ownerId = isItemPresent.rows[0].owner_id;
-  const ownerMsg = `Your item ${isItemPresent.rows[0].name} has received a new bid of ${bid_amount}`;
+  // update the notification's to the owner of the item.
+  if (ownerId && ownerId !== userId) {
+    const ownerMsg = `Your item ${isItemPresent.rows[0].name} has received a new bid of ${bid_amount}`;
 
-  await pool.query(
-    `INSERT INTO notifications (user_id, message) VALUES ($1, $2)`,
-    [ownerId, ownerMsg]
-  );
+    await pool.query(
+      `INSERT INTO notifications (user_id, message) VALUES ($1, $2)`,
+      [ownerId, ownerMsg]
+    );
 
-  //**** */ web socket
+    //**** */ web socket
+    const receiverSocketId = getReceiverSocketId(ownerId);
+    io.to(receiverSocketId).emit("notification", ownerMsg);
+  }
 
   //notify to the last highest bidder..
   const highestBidResult = await pool.query(
-    `SELECT * FROM bids WHERE item_id = $1`,
+    `SELECT * FROM bids WHERE item_id = $1 ORDER BY created_at DESC`,
     [itemId]
   );
   const highestBid = highestBidResult.rows[0];
 
+  // console.log(highestBid);
   if (highestBid && highestBid.user_id !== userId) {
     const outbitMsg = `You have been outbid on item ${isItemPresent.rows[0].name}. The new highest bid is ${bid_amount}`;
 
@@ -77,7 +77,15 @@ export const createBid = async (req, res) => {
       [highestBid.user_id, outbitMsg]
     );
     // **** web socket.. implement...
+    const receiverSocketId = getReceiverSocketId(highestBid.user_id);
+    io.to(receiverSocketId).emit("notification", outbitMsg);
   }
+
+  await pool.query(
+    `INSERT INTO bids (item_id, user_id, bid_amount)
+  VALUES ($1, $2, $3 )`,
+    [itemId, userId, bid_amount]
+  );
 
   // update the new bid to the item's current price..
   await pool.query(

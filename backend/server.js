@@ -5,13 +5,16 @@ import async_error from "express-async-errors";
 import path from "path";
 import cookieParser from "cookie-parser";
 import express from "express";
+import expressWinston from "express-winston";
+import { transports, format } from "winston";
 
+// security
 import helmet from "helmet";
-import { app, server, io } from "./socket/socket.js";
-import { Server } from "socket.io";
 import cors from "cors";
 import xss from "xss-clean";
+import rateLimiter from "express-rate-limit";
 
+import { app, server } from "./socket/socket.js";
 import authRouter from "./routes/auth.js";
 import itemsRouter from "./routes/items.js";
 import bidsRouter from "./routes/bids.js";
@@ -21,6 +24,13 @@ import pool from "./db/dbConfig.js";
 import { notFoundMiddleware } from "./middlewares/not-found.js";
 import { errorHandlerMiddleware } from "./middlewares/error-handler.js";
 
+app.set("trust proxy", 1);
+app.use(
+  rateLimiter({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    limit: 100,
+  })
+);
 app.use(cookieParser());
 app.use(express.json());
 app.use(
@@ -41,24 +51,31 @@ app.use(
   })
 );
 app.use(cors());
-
 pool.connect();
 app.use(xss());
+// logger
+app.use(
+  expressWinston.logger({
+    transports: [new transports.Console()],
+    format: format.combine(
+      format.json(),
+      format.timestamp(),
+      format.prettyPrint()
+    ),
+  })
+);
 
 const __dirname = path.resolve();
 
 app.use("/backend/public", express.static(__dirname + "/backend/public"));
 
-// io.on("connection", (socket) => {
-//   socket.on("message", (message) => {
-//     console.log(" message from frontend", message);
-//     io.emit("message from backend", message);
-//   });
-// });
-
-app.get("/*", (req, res) => {
-  return res.sendFile(__dirname + "/backend/public/index.html");
+app.get("/", (req, res) => {
+  return res.send("Bidding App");
 });
+
+// app.get("/*", (req, res) => {
+//   return res.sendFile(__dirname + "/backend/public/index.html");
+// });
 
 app.use("/api/v1/users", authRouter);
 app.use("/api/v1/items", itemsRouter);
@@ -81,3 +98,5 @@ const start = () => {
 };
 
 start();
+
+export { app, server };

@@ -7,11 +7,13 @@ import {
   deleteItem,
   updateItem,
 } from "../controllers/items.js";
+import upload from "../middlewares/multer.js";
+
 const router = express.Router();
 
 router.get("/", getAllItems);
 
-router.post("/", authentication, createItem);
+router.post("/", authentication, upload, createItem);
 
 router.get("/:id", getSingleItem);
 

@@ -2,9 +2,12 @@ import { StatusCodes } from "http-status-codes";
 import pool from "../db/dbConfig.js";
 import { BadRequestError } from "../errors/bad-request.js";
 import { CustomAPIError } from "../errors/custom-api.js";
+import fs from "fs";
 
 export const getAllItems = async (req, res) => {
-  const { search, status } = req.query;
+  const { search, status, page = 1, limit = 5 } = req.query;
+
+  const offSet = (page - 1) * limit;
 
   let query = "SELECT * FROM auction_items WHERE 1=1";
   let params = [];
@@ -17,17 +20,30 @@ export const getAllItems = async (req, res) => {
     query += " AND status = $" + (params.length + 1);
     params.push(status);
   }
+  const countResult = await pool.query(query, params);
 
   query += " ORDER BY created_at DESC";
 
+  query += " LIMIT $" + (params.length + 1);
+  params.push(limit);
+
+  query += " OFFSET $" + (params.length + 1);
+  params.push(offSet);
+
   try {
     const allItems = await pool.query(query, params);
-    res
-      .status(StatusCodes.OK)
-      .json({ totalItems: allItems.rowCount, items: allItems.rows });
+    const totalItems = countResult.rowCount;
+    const totalPages = Math.ceil(totalItems / limit);
+
+    res.status(StatusCodes.OK).json({
+      totalCount: totalItems,
+      Items: allItems.rows,
+      totalPages: totalPages,
+      currentPage: parseInt(page, 10),
+    });
   } catch (error) {
     console.error(error);
-    res.sendStatus(500);
+    throw new CustomAPIError("Server Error", StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -40,19 +56,15 @@ export const getSingleItem = async (req, res) => {
 
   if (item.rowCount === 0) throw new BadRequestError(`No item with id ${id}`);
 
-  res.status(StatusCodes.OK).json({ item: item.rows });
+  res.status(StatusCodes.OK).json({ item: item.rows[0] });
 };
 
 export const createItem = async (req, res) => {
   const { userId, username, role } = req.user;
-  const {
-    name,
-    description,
-    starting_price,
-    current_price,
-    image_url,
-    end_time,
-  } = req.body;
+  const { name, description, starting_price, current_price, end_time } =
+    req.body;
+
+  const image_url = req.file ? req.file.path : "";
 
   if (!name) throw new BadRequestError("Name of the item, can't be left empty");
 
@@ -67,9 +79,9 @@ export const createItem = async (req, res) => {
   const newCurrent_price = !current_price ? starting_price : current_price;
 
   // image upload.
-  await pool.query(
+  const itemId = await pool.query(
     `INSERT INTO auction_items (name, description, starting_price, current_price,image_url, end_time, owner_id)
-  VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+  VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
     [
       name,
       description,
@@ -83,7 +95,7 @@ export const createItem = async (req, res) => {
 
   res
     .status(StatusCodes.CREATED)
-    .json({ msg: "item created successfully", name, username });
+    .json({ itemId, msg: "item created successfully", name, username });
 };
 
 export const updateItem = async (req, res) => {
@@ -102,20 +114,15 @@ export const updateItem = async (req, res) => {
 
   if (role != "admin" && userId != item.rows[0].owner_id) {
     throw new CustomAPIError(
-      `Authorization-Invalid. To delete item with id: ${id}, you should be admin or owner`,
+      `Authorization-Invalid. To update item with id: ${id}, you should be admin or owner`,
       StatusCodes.FORBIDDEN
     );
   }
 
-  const {
-    name,
-    description,
-    starting_price,
-    current_price,
-    image_url,
-    end_time,
-  } = req.body;
+  const { name, description, starting_price, current_price, end_time } =
+    req.body;
 
+  const image_url = req.file ? req.file.path : "";
   if (!name) throw new BadRequestError("Name of the item, can't be left empty");
 
   if (!description)
@@ -157,7 +164,9 @@ export const deleteItem = async (req, res) => {
     id,
   ]);
 
-  if (item.rowCount === 0) throw new BadRequestError(`No items with id ${id}`);
+  if (item.rowCount == 0) {
+    throw new BadRequestError(`No item with id: ${id}`);
+  }
 
   const { userId, username, role } = req.user;
 
@@ -168,7 +177,23 @@ export const deleteItem = async (req, res) => {
     );
   }
 
-  await pool.query(`DELETE FROM auction_items WHERE id = $1`, [id]);
+  // deleting all the bids releated to item...
+  await pool.query(`DELETE FROM bids WHERE item_id = $1`, [id]);
+
+  const isDelete = await pool.query(`DELETE FROM auction_items WHERE id = $1`, [
+    id,
+  ]);
+
+  if (isDelete.rowCount) {
+    const imagePath = item.rows[0].image_url;
+
+    fs.unlink(imagePath, (error) => {
+      if (error) console.log("image file not deleted");
+      else {
+        console.log("image deleted successfully");
+      }
+    });
+  }
 
   res
     .status(StatusCodes.OK)

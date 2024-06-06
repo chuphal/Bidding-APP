@@ -34,9 +34,7 @@ export const markNotifications = async (req, res) => {
       [userId]
     );
 
-    res
-      .status(StatusCodes.OK)
-      .json({ message: "Notifications marked as read" });
+    res.status(StatusCodes.OK).json({ msg: "Notifications marked as read" });
   } catch (error) {
     throw new CustomAPIError(error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
