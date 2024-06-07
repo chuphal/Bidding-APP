@@ -8,14 +8,17 @@ import jwt from "jsonwebtoken";
 import transporter from "../nodemailer/mailerConfig.js";
 
 import { CustomAPIError } from "../errors/custom-api.js";
+import { logger } from "../logger/logger.js";
 
 export const register = async (req, res) => {
   const { username, password, email, role } = req.body;
 
   if (!username || !email || !password) {
+    logger.error("Please provide  name, email and password");
     throw new BadRequestError("Please provide  name, email and password");
   }
   if (password.length < 6) {
+    logger.error("Password should be at least 6 charaters");
     throw new BadRequestError("Password should be at least 6 charaters");
   }
 
@@ -42,10 +45,15 @@ export const register = async (req, res) => {
       },
       res
     );
+    logger.info("Registered successfully");
     res
       .status(StatusCodes.CREATED)
       .json({ msg: "Registered successfully", user: user.rows[0] });
   } catch (error) {
+    logger.error(
+      "User already exist,please provide unique name, email and password",
+      error
+    );
     throw new BadRequestError(
       "User already exist,please provide unique name, email and password"
     );
@@ -59,6 +67,7 @@ export const login = async (req, res) => {
     username,
   ]);
   if (user.rowCount === 0) {
+    logger.error("Invalid username or password");
     throw new BadRequestError("Invalid username or password");
   }
   const encryptPassword = user.rows[0].password;
@@ -68,6 +77,7 @@ export const login = async (req, res) => {
   );
 
   if (!user || !isPasswordCorrect) {
+    logger.error("Invalid username or password");
     throw new BadRequestError("Invalid username or password");
   }
 
@@ -80,6 +90,7 @@ export const login = async (req, res) => {
     res
   );
 
+  logger.info("Login successfully");
   res
     .status(StatusCodes.OK)
     .json({ msg: "Login successfully", user: user.rows[0] });
@@ -88,9 +99,10 @@ export const login = async (req, res) => {
 export const logout = (req, res) => {
   try {
     res.cookie("jwt", "", { maxAge: 0 });
+    logger.info("Logged out successfully");
     res.status(StatusCodes.OK).json({ msg: "Logged out successfully" });
   } catch (error) {
-    console.log("Error in logout controller", error.message);
+    logger.error("Error in logout controller", error);
     throw new CustomAPIError("Server Error", StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
@@ -103,6 +115,7 @@ export const passwordReset = async (req, res) => {
   ]);
 
   if (result.rows.length === 0) {
+    logger.error("Email not found");
     throw new NotFoundError("Email not found");
   }
 
@@ -129,11 +142,12 @@ export const passwordReset = async (req, res) => {
 
     await transporter.sendMail(mailOptions);
 
+    logger.info(`Reset link has been sent. Please check your email. .`);
     res.status(StatusCodes.OK).json({
       msg: `Reset link has been sent. Please check your email. .`,
     });
   } catch (error) {
-    console.log("catch reset password", error);
+    logger.error("Error while sending mail", error);
     throw new CustomAPIError(
       "Error while sending mail",
       StatusCodes.INTERNAL_SERVER_ERROR
@@ -147,6 +161,7 @@ export const passwordResetToken = async (req, res) => {
   const { newPassword } = req.body;
 
   if (!newPassword) {
+    logger.error("Please enter password");
     throw new BadRequestError("Please enter password");
   }
 
@@ -160,6 +175,7 @@ export const passwordResetToken = async (req, res) => {
     );
 
     if (result.rowCount === 0) {
+      logger.error("Invalid or expired token");
       throw new BadRequestError("Invalid or expired token");
     }
 
@@ -172,37 +188,43 @@ export const passwordResetToken = async (req, res) => {
       `UPDATE users SET password = $1, reset_token = null, reset_token_expires=null WHERE id = $2`,
       [hashedPassword, id]
     );
-
+    logger.info("Password updated successfully");
     res.status(StatusCodes.OK).json({ msg: "Password updated successfully" });
   } catch (error) {
-    console.log(error);
+    logger.error("Server Error"), error;
     throw new CustomAPIError("Server Error", StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
 export const profile = async (req, res) => {
-  const { userId, username, role } = req.user;
+  try {
+    const { userId, username, role } = req.user;
 
-  const items = await pool.query(
-    `SELECT * FROM auction_items WHERE owner_id = $1`,
-    [userId]
-  );
+    const items = await pool.query(
+      `SELECT * FROM auction_items WHERE owner_id = $1`,
+      [userId]
+    );
 
-  const bids = await pool.query(`SELECT * FROM bids WHERE user_id = $1`, [
-    userId,
-  ]);
+    const bids = await pool.query(`SELECT * FROM bids WHERE user_id = $1`, [
+      userId,
+    ]);
 
-  const notification = await pool.query(
-    `SELECT * FROM notifications WHERE user_id = $1`,
-    [userId]
-  );
+    const notification = await pool.query(
+      `SELECT * FROM notifications WHERE user_id = $1`,
+      [userId]
+    );
 
-  res.status(StatusCodes.OK).json({
-    auctionItemsCount: items.rowCount,
-    auctionItems: items.rows,
-    bidsCount: bids.rowCount,
-    bids: bids.rows,
-    notificationCount: notification.rowCount,
-    notifications: notification.rows,
-  });
+    logger.info("Successfully viewed profile");
+    res.status(StatusCodes.OK).json({
+      auctionItemsCount: items.rowCount,
+      auctionItems: items.rows,
+      bidsCount: bids.rowCount,
+      bids: bids.rows,
+      notificationCount: notification.rowCount,
+      notifications: notification.rows,
+    });
+  } catch (error) {
+    logger.error("server error", error);
+    throw new CustomAPIError("Server Error", StatusCodes.INTERNAL_SERVER_ERROR);
+  }
 };

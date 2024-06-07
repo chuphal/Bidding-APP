@@ -3,6 +3,8 @@ import pool from "../db/dbConfig.js";
 import { BadRequestError } from "../errors/bad-request.js";
 import { CustomAPIError } from "../errors/custom-api.js";
 import fs from "fs";
+import { logger } from "express-winston";
+import { log } from "console";
 
 export const getAllItems = async (req, res) => {
   const { search, status, page = 1, limit = 5 } = req.query;
@@ -35,6 +37,7 @@ export const getAllItems = async (req, res) => {
     const totalItems = countResult.rowCount;
     const totalPages = Math.ceil(totalItems / limit);
 
+    logger.info("successfully get all items");
     res.status(StatusCodes.OK).json({
       totalCount: totalItems,
       Items: allItems.rows,
@@ -42,7 +45,7 @@ export const getAllItems = async (req, res) => {
       currentPage: parseInt(page, 10),
     });
   } catch (error) {
-    console.error(error);
+    logger.error("Server Error", error);
     throw new CustomAPIError("Server Error", StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
@@ -54,8 +57,11 @@ export const getSingleItem = async (req, res) => {
     id,
   ]);
 
-  if (item.rowCount === 0) throw new BadRequestError(`No item with id ${id}`);
-
+  if (item.rowCount === 0) {
+    logger.error(`No item with id ${id}`);
+    throw new BadRequestError(`No item with id ${id}`);
+  }
+  logger.info("Successfuly get the item");
   res.status(StatusCodes.OK).json({ item: item.rows[0] });
 };
 
@@ -66,15 +72,22 @@ export const createItem = async (req, res) => {
 
   const image_url = req.file ? req.file.path : "";
 
-  if (!name) throw new BadRequestError("Name of the item, can't be left empty");
-
-  if (!description)
+  if (!name) {
+    logger.error("Name of the item, can't be left empty");
+    throw new BadRequestError("Name of the item, can't be left empty");
+  }
+  if (!description) {
+    logger.error("Provide the descriptionn to the item");
     throw new BadRequestError("Provide the descriptionn to the item");
-
-  if (!starting_price)
+  }
+  if (!starting_price) {
+    logger.error("Mention the starting price to the item");
     throw new BadRequestError("Mention the starting price to the item");
-
-  if (!end_time) throw new BadRequestError("Provide the end time of the item");
+  }
+  if (!end_time) {
+    logger.error("Provide the end time of the item");
+    throw new BadRequestError("Provide the end time of the item");
+  }
 
   const newCurrent_price = !current_price ? starting_price : current_price;
 
@@ -93,6 +106,7 @@ export const createItem = async (req, res) => {
     ]
   );
 
+  logger.info("item created successfully");
   res
     .status(StatusCodes.CREATED)
     .json({ itemId, msg: "item created successfully", name, username });
@@ -108,11 +122,17 @@ export const updateItem = async (req, res) => {
     id,
   ]);
 
-  if (item.rowCount === 0) throw new BadRequestError(`No items with id ${id}`);
+  if (item.rowCount === 0) {
+    logger.error(`No items with id ${id}`);
+    throw new BadRequestError(`No items with id ${id}`);
+  }
 
   const owner = item.rows[0].owner_id;
 
   if (role != "admin" && userId != item.rows[0].owner_id) {
+    logger.error(
+      `Authorization-Invalid. To update item with id: ${id}, you should be admin or owner`
+    );
     throw new CustomAPIError(
       `Authorization-Invalid. To update item with id: ${id}, you should be admin or owner`,
       StatusCodes.FORBIDDEN
@@ -123,15 +143,22 @@ export const updateItem = async (req, res) => {
     req.body;
 
   const image_url = req.file ? req.file.path : "";
-  if (!name) throw new BadRequestError("Name of the item, can't be left empty");
-
-  if (!description)
+  if (!name) {
+    logger.error("Name of the item, can't be left empty");
+    throw new BadRequestError("Name of the item, can't be left empty");
+  }
+  if (!description) {
+    logger.error("Provide the descriptionn to the item");
     throw new BadRequestError("Provide the descriptionn to the item");
-
-  if (!starting_price)
+  }
+  if (!starting_price) {
+    logger.error("Mention the starting price to the item");
     throw new BadRequestError("Mention the starting price to the item");
-
-  if (!end_time) throw new BadRequestError("Provide the end time of the item");
+  }
+  if (!end_time) {
+    logger.error("Provide the end time of the item");
+    throw new BadRequestError("Provide the end time of the item");
+  }
 
   const newCurrent_price = !current_price ? starting_price : current_price;
 
@@ -150,6 +177,7 @@ export const updateItem = async (req, res) => {
     ]
   );
 
+  logger.info("item updated successfully");
   res.status(StatusCodes.CREATED).json({
     msg: "item updated successfully",
     newItem: name,
@@ -165,12 +193,16 @@ export const deleteItem = async (req, res) => {
   ]);
 
   if (item.rowCount == 0) {
+    logger.error(`No item with id: ${id}`);
     throw new BadRequestError(`No item with id: ${id}`);
   }
 
   const { userId, username, role } = req.user;
 
   if (role != "admin" && userId != item.rows[0].owner_id) {
+    logger.error(
+      `Authorization-Invalid. To delete item with id: ${id}, you should be admin or owner`
+    );
     throw new CustomAPIError(
       `Authorization-Invalid. To delete item with id: ${id}, you should be admin or owner`,
       StatusCodes.FORBIDDEN
@@ -188,13 +220,17 @@ export const deleteItem = async (req, res) => {
     const imagePath = item.rows[0].image_url;
 
     fs.unlink(imagePath, (error) => {
-      if (error) console.log("image file not deleted");
-      else {
+      if (error) {
+        logger.error("image file not deleted", error);
+        console.log("image file not deleted");
+      } else {
+        logger.info("image deleted successfully");
         console.log("image deleted successfully");
       }
     });
   }
 
+  logger.info("successfully deleted an item");
   res
     .status(StatusCodes.OK)
     .json({ msg: "successfully deleted an item", deleted_by: username });

@@ -23,6 +23,7 @@ import notificationsRouter from "./routes/notifications.js";
 import pool from "./db/dbConfig.js";
 import { notFoundMiddleware } from "./middlewares/not-found.js";
 import { errorHandlerMiddleware } from "./middlewares/error-handler.js";
+import { logger, requestLogger } from "./logger/logger.js";
 
 app.set("trust proxy", 1);
 app.use(
@@ -54,14 +55,11 @@ app.use(cors());
 pool.connect();
 app.use(xss());
 // logger
+
 app.use(
   expressWinston.logger({
-    transports: [new transports.Console()],
-    format: format.combine(
-      format.json(),
-      format.timestamp(),
-      format.prettyPrint()
-    ),
+    winstonInstance: requestLogger,
+    statusLevels: true,
   })
 );
 
@@ -81,6 +79,12 @@ app.use("/api/v1/users", authRouter);
 app.use("/api/v1/items", itemsRouter);
 app.use("/api/v1/items", bidsRouter);
 app.use("/api/v1/notifications", notificationsRouter);
+
+app.use(
+  expressWinston.errorLogger({
+    winstonInstance: logger,
+  })
+);
 
 // error handlers;
 app.use(notFoundMiddleware);

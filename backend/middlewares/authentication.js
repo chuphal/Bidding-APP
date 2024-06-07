@@ -1,10 +1,12 @@
 import jwt from "jsonwebtoken";
 import { UnauthenticatedError } from "../errors/index.js";
+import { logger } from "../logger/logger.js";
 
 const authentication = (req, res, next) => {
   const token = req.cookies.jwt;
   // console.log(token);
   if (!token) {
+    logger.error("Authentication Invalid. No token found");
     throw new UnauthenticatedError("Authentication Invalid. No token found");
   }
   try {
@@ -19,6 +21,7 @@ const authentication = (req, res, next) => {
     next();
   } catch (error) {
     console.log("auth-error", error);
+    logger.error("Authentication Invalid");
     throw new UnauthenticatedError("Authentication Invalid");
   }
 };

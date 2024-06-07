@@ -2,22 +2,31 @@ import { StatusCodes } from "http-status-codes";
 import pool from "../db/dbConfig.js";
 import { BadRequestError, CustomAPIError } from "../errors/index.js";
 import { io, getReceiverSocketId } from "../socket/socket.js";
+import { logger } from "../logger/logger.js";
 
 export const getAllBids = async (req, res) => {
-  const { itemId } = req.params;
+  try {
+    const { itemId } = req.params;
 
-  const totalBids = await pool.query(
-    `SELECT * FROM bids WHERE item_id = $1 ORDER BY created_at DESC`,
-    [itemId]
-  );
-
-  if (totalBids.rowCount === 0)
-    throw new CustomAPIError(
-      `Currently, there are no bids regarding item having id: ${itemId}`,
-      StatusCodes.NOT_FOUND
+    const totalBids = await pool.query(
+      `SELECT * FROM bids WHERE item_id = $1 ORDER BY created_at DESC`,
+      [itemId]
     );
 
-  res.status(StatusCodes.OK).json({ bids: totalBids.rows });
+    if (totalBids.rowCount === 0) {
+      logger.info(
+        `Currently, there are no bids regarding item having id: ${itemId}`
+      );
+      return res.status(StatusCodes.OK).json({
+        bids: `Currently, there are no bids regarding item having id: ${itemId}`,
+      });
+    }
+    logger.info("Successfully list all the bids");
+    return res.status(StatusCodes.OK).json({ bids: totalBids.rows });
+  } catch (error) {
+    logger.error("Server error", error);
+    throw new CustomAPIError("Server Error", StatusCodes.INTERNAL_SERVER_ERROR);
+  }
 };
 
 export const createBid = async (req, res) => {
@@ -32,17 +41,19 @@ export const createBid = async (req, res) => {
     [itemId]
   );
 
-  if (isItemPresent.rowCount === 0)
+  if (isItemPresent.rowCount === 0) {
+    logger.error(`No item exist with id: ${itemId}`);
     throw new BadRequestError(`No item exist with id: ${itemId}`);
-
+  }
   // checking bid amount...
   const last_bid = isItemPresent.rows[0].current_price;
   // console.log(last_bid);
   if (last_bid >= bid_amount) {
     // 409 - req. not proccessed due to conflict
+    logger.error(`Your bidding amount should be greater than ${last_bid}`);
     throw new CustomAPIError(
       `Your bidding amount should be greater than ${last_bid}`,
-      409
+      StatusCodes.CONFLICT
     );
   }
 
@@ -95,6 +106,7 @@ export const createBid = async (req, res) => {
     [bid_amount, itemId]
   );
 
+  logger.info("bid created successfully");
   res
     .status(StatusCodes.CREATED)
     .json({ bid_creator: username, msg: "bid created successfully" });
