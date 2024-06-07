@@ -3,9 +3,7 @@ import pool from "../db/dbConfig.js";
 import { BadRequestError } from "../errors/bad-request.js";
 import { CustomAPIError } from "../errors/custom-api.js";
 import fs from "fs";
-import { logger } from "express-winston";
-import { log } from "console";
-
+import { logger } from "../logger/logger.js";
 export const getAllItems = async (req, res) => {
   const { search, status, page = 1, limit = 5 } = req.query;
 
@@ -219,7 +217,7 @@ export const deleteItem = async (req, res) => {
   if (isDelete.rowCount) {
     const imagePath = item.rows[0].image_url;
 
-    fs.unlink(imagePath, (error) => {
+    fs.unlinkSync(imagePath, (error) => {
       if (error) {
         logger.error("image file not deleted", error);
         console.log("image file not deleted");

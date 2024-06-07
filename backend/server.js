@@ -20,10 +20,10 @@ import itemsRouter from "./routes/items.js";
 import bidsRouter from "./routes/bids.js";
 import notificationsRouter from "./routes/notifications.js";
 
-import pool from "./db/dbConfig.js";
 import { notFoundMiddleware } from "./middlewares/not-found.js";
 import { errorHandlerMiddleware } from "./middlewares/error-handler.js";
 import { logger, requestLogger } from "./logger/logger.js";
+import pool from "./db/dbConfig.js";
 
 app.set("trust proxy", 1);
 app.use(

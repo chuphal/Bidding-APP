@@ -6,15 +6,14 @@ CREATE TABLE users (
 	password TEXT NOT NULL UNIQUE,
 	email TEXT UNIQUE NOT NULL,
 	role TEXT DEFAULT 'user',
-	created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+	created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+	--for reset password
+	reset_token TEXT,
+	reset_token_expires TIMESTAMPTZ;
 );
 
--- RESET PASSWORD
-ALTER TABLE users
-ADD COLUMN reset_token TEXT,
-ADD COLUMN reset_token_expires TIMESTAMPTZ;
 
-ALTER TABLE auction_items ADD COLUMN status VARCHAR(50) NOT NULL DEFAULT 'active';
+-- ALTER TABLE auction_items ADD COLUMN status VARCHAR(50) NOT NULL DEFAULT 'active';
 -- items
 CREATE TABLE auction_items (
 	id SERIAL PRIMARY KEY NOT NULL,
@@ -26,34 +25,35 @@ CREATE TABLE auction_items (
 	end_time TIMESTAMP NOT NULL,
 	created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 	owner_id INT,
-	status DEFAULT 'active',
+	status VARCHAR(50) NOT NULL DEFAULT 'active',
 	CONSTRAINT fk_users_items 
 		FOREIGN KEY (owner_id) 
 			REFERENCES users (id)
 );
 
 -- making the owner and item realation..
-ALTER TABLE auction_items ADD owner_id INT; 
+-- ALTER TABLE auction_items ADD owner_id INT; 
 
-ALTER TABLE auction_items ADD
-CONSTRAINT fk_users_items FOREIGN KEY (owner_id) REFERENCES users (id); 
+-- ALTER TABLE auction_items ADD
+-- CONSTRAINT fk_users_items FOREIGN KEY (owner_id) REFERENCES users (id); 
 
 INSERT INTO auction_items (name, description, starting_price, end_time)
 VALUES ('gold brick', 'Solid gold brick of 24 carrat', 1500,'2024-10-01 23:59:59.727');
 
--- fucntion
-CREATE FUNCTION set_current_price_to_starting_price() RETURNS TRIGGER AS $$
-BEGIN
-    NEW.current_price := NEW.starting_price;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
 
---trigger
-CREATE TRIGGER set_current_price_before_insert
-BEFORE INSERT ON auction_items
-FOR EACH ROW
-EXECUTE FUNCTION set_current_price_to_starting_price();
+-- fucntion
+-- CREATE FUNCTION set_current_price_to_starting_price() RETURNS TRIGGER AS $$
+-- BEGIN
+--     NEW.current_price := NEW.starting_price;
+--     RETURN NEW;
+-- END;
+-- $$ LANGUAGE plpgsql;
+
+-- --trigger
+-- CREATE TRIGGER set_current_price_before_insert
+-- BEFORE INSERT ON auction_items
+-- FOR EACH ROW
+-- EXECUTE FUNCTION set_current_price_to_starting_price();
 
 -- bids
 CREATE TABLE bids (

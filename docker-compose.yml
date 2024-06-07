@@ -1,0 +1,17 @@
+version: "3"
+services:
+  postgres:
+    image: "postgres"
+    restart: always
+    ports:
+      - "5432:5432"
+
+  app:
+    build:
+      context: .
+    ports:
+      - "3000:3000"
+    depends_on:
+      - "postgres"
+    environment:
+      NODE_ENV: development
