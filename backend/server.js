@@ -2,11 +2,10 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import async_error from "express-async-errors";
-import path from "path";
+
 import cookieParser from "cookie-parser";
 import express from "express";
 import expressWinston from "express-winston";
-import { transports, format } from "winston";
 
 // security
 import helmet from "helmet";
@@ -63,17 +62,9 @@ app.use(
   })
 );
 
-const __dirname = path.resolve();
-
-app.use("/backend/public", express.static(__dirname + "/backend/public"));
-
 app.get("/", (req, res) => {
   return res.send("Bidding App");
 });
-
-// app.get("/*", (req, res) => {
-//   return res.sendFile(__dirname + "/backend/public/index.html");
-// });
 
 app.use("/api/v1/users", authRouter);
 app.use("/api/v1/items", itemsRouter);
