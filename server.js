@@ -63,7 +63,7 @@ app.use(
 );
 
 app.get("/", (req, res) => {
-  return res.send("Bidding App");
+  res.send("Bidding App");
 });
 
 app.use("/api/v1/users", authRouter);
