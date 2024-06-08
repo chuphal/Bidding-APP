@@ -10,4 +10,4 @@ RUN npm install
 COPY . .
 
 
-CMD [ "node", "./backend/server.js" ]
+CMD [ "node", "server.js" ]
