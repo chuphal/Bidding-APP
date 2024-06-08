@@ -13,16 +13,16 @@ import cors from "cors";
 import xss from "xss-clean";
 import rateLimiter from "express-rate-limit";
 
-import { app, server } from "./socket/socket.js";
-import authRouter from "./routes/auth.js";
-import itemsRouter from "./routes/items.js";
-import bidsRouter from "./routes/bids.js";
-import notificationsRouter from "./routes/notifications.js";
+import { app, server } from "./backend/socket/socket.js";
+import authRouter from "./backend/routes/auth.js";
+import itemsRouter from "./backend/routes/items.js";
+import bidsRouter from "./backend/routes/bids.js";
+import notificationsRouter from "./backend/routes/notifications.js";
 
-import { notFoundMiddleware } from "./middlewares/not-found.js";
-import { errorHandlerMiddleware } from "./middlewares/error-handler.js";
-import { logger, requestLogger } from "./logger/logger.js";
-import pool from "./db/dbConfig.js";
+import { notFoundMiddleware } from "./backend/middlewares/not-found.js";
+import { errorHandlerMiddleware } from "./backend/middlewares/error-handler.js";
+import { logger, requestLogger } from "./backend/logger/logger.js";
+import pool from "./backend/db/dbConfig.js";
 
 app.set("trust proxy", 1);
 app.use(

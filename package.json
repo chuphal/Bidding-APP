@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "main": "server.js",
   "type": "module",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "test": "mocha",
-    "server": "nodemon backend/server.js",
-    "start": "node backend/server.js"
+    "server": "nodemon server.js",
+    "start": "node server.js"
   },
   "author": "Chandan",
   "license": "ISC",
