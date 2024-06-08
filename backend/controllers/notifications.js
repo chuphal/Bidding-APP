@@ -1,7 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import pool from "../db/dbConfig.js";
 import { CustomAPIError } from "../errors/custom-api.js";
-import { logger } from "express-winston";
+import { logger } from "../logger/logger.js";
 
 export const getNotifications = async (req, res) => {
   try {
@@ -25,6 +25,7 @@ export const getNotifications = async (req, res) => {
       });
     }
   } catch (error) {
+    console.log(error);
     logger.error("Server ERROR", error);
     throw new CustomAPIError(error, StatusCodes.INTERNAL_SERVER_ERROR);
   }

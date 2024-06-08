@@ -13,6 +13,11 @@ import cors from "cors";
 import xss from "xss-clean";
 import rateLimiter from "express-rate-limit";
 
+// swagger
+import swaggerUI from "swagger-ui-express";
+import YAML from "yamljs";
+const swaggerDocument = YAML.load("./swagger.yaml");
+
 import { app, server } from "./backend/socket/socket.js";
 import authRouter from "./backend/routes/auth.js";
 import itemsRouter from "./backend/routes/items.js";
@@ -63,8 +68,12 @@ app.use(
 );
 
 app.get("/", (req, res) => {
-  res.send("Bidding App");
+  res.send(
+    "<h1>Welcome to Bidding App API</h1> <a href='/api-docs'>Documentation</a>"
+  );
 });
+
+app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 
 app.use("/api/v1/users", authRouter);
 app.use("/api/v1/items", itemsRouter);

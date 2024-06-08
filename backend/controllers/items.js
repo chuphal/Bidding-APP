@@ -90,7 +90,7 @@ export const createItem = async (req, res) => {
   const newCurrent_price = !current_price ? starting_price : current_price;
 
   // image upload.
-  const itemId = await pool.query(
+  const item = await pool.query(
     `INSERT INTO auction_items (name, description, starting_price, current_price,image_url, end_time, owner_id)
   VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
     [
@@ -103,7 +103,7 @@ export const createItem = async (req, res) => {
       userId,
     ]
   );
-
+  const itemId = item.rows[0].id;
   logger.info("item created successfully");
   res
     .status(StatusCodes.CREATED)

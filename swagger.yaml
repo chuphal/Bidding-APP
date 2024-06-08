@@ -1,0 +1,536 @@
+openapi: 3.1.0
+info:
+  title: BIDDING-APP-API
+  contact: {}
+  version: "1.0"
+jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
+servers:
+  - url: https://bidding-app-h0xs.onrender.com/api/v1
+    variables: {}
+paths:
+  /users/register:
+    post:
+      tags:
+        - USERS
+      summary: REGISTER
+      operationId: REGISTER
+      parameters: []
+      requestBody:
+        description: ""
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/REGISTERREQUEST"
+                - examples:
+                    - username: King
+                      email: king@gmail.com
+                      password: "123456"
+              contentMediaType: application/json
+            example:
+              username: King
+              email: king@gmail.com
+              password: "123456"
+        required: true
+      responses:
+        "200":
+          description: ""
+          headers: {}
+      deprecated: false
+      security: []
+    parameters: []
+  /users/login:
+    post:
+      tags:
+        - USERS
+      summary: LOGIN
+      operationId: LOGIN
+      parameters: []
+      requestBody:
+        description: ""
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/LOGINREQUEST"
+                - examples:
+                    - username: Paul
+                      password: "123456"
+              contentMediaType: application/json
+            example:
+              username: Paul
+              password: "123456"
+        required: true
+      responses:
+        "200":
+          description: ""
+          headers: {}
+      deprecated: false
+      security: []
+    parameters: []
+  /users/profile:
+    get:
+      tags:
+        - USERS
+      summary: PROFILE
+      operationId: PROFILE
+      parameters: []
+      responses:
+        "200":
+          description: ""
+          headers: {}
+      deprecated: false
+      security:
+        - CookieAuth: []
+    parameters: []
+  /users/logout:
+    post:
+      tags:
+        - USERS
+      summary: LOGOUT
+      operationId: LOGOUT
+      parameters: []
+      requestBody:
+        description: ""
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/LOGOUTREQUEST"
+                - examples:
+                    - name: logan
+              contentMediaType: application/json
+            example:
+              name: logan
+        required: true
+      responses:
+        "200":
+          description: ""
+          headers: {}
+      deprecated: false
+      security: []
+    parameters: []
+  /users/password-reset:
+    post:
+      tags:
+        - USERS
+      summary: PASSWORD RESET
+      operationId: PASSWORDRESET
+      parameters: []
+      requestBody:
+        description: ""
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/PASSWORDRESETREQUEST"
+                - examples:
+                    - email: paul@gmail.com
+              contentMediaType: application/json
+            example:
+              email: paul@gmail.com
+        required: true
+      responses:
+        "200":
+          description: ""
+          headers: {}
+      deprecated: false
+      security: []
+    parameters: []
+  /users/reset-password/{token}:
+    parameters:
+      - in: path
+        name: token
+        schema:
+          type: string
+        required: true
+        description: The job ID
+    post:
+      tags:
+        - USERS
+      summary: PASSWORD RESET TOKEN
+      operationId: PASSWORDRESETTOKEN
+      parameters: []
+      requestBody:
+        description: ""
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/PASSWORDRESETTOKENREQUEST"
+                - examples:
+                    - newPassword: "1234346"
+              contentMediaType: application/json
+            example:
+              newPassword: "1234346"
+        required: true
+      responses:
+        "200":
+          description: ""
+          headers: {}
+      deprecated: false
+      security: []
+
+  /items:
+    get:
+      tags:
+        - ITEMS
+      summary: GET ALL ITEMS
+      operationId: GETALLITEMS
+      parameters:
+        - name: limit
+          in: query
+          description: ""
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: integer
+            contentEncoding: int32
+            examples:
+              - 2
+        - name: page
+          in: query
+          description: ""
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: integer
+            contentEncoding: int32
+            examples:
+              - 6
+      responses:
+        "200":
+          description: ""
+          headers: {}
+      deprecated: false
+      security: []
+    post:
+      tags:
+        - ITEMS
+      summary: CREATE ITEM
+      operationId: CREATEITEM
+      parameters: []
+      requestBody:
+        content:
+          multipart/form-data:
+            encoding: {}
+            schema:
+              required:
+                - file
+                - name
+                - description
+                - starting_price
+                - end_time
+              type: object
+              properties:
+                file:
+                  type: string
+                  contentEncoding: base64
+                name:
+                  type: string
+                  examples:
+                    - Diamonds
+                description:
+                  type: string
+                  examples:
+                    - These are the finest diamonds in the world
+                starting_price:
+                  type: integer
+                  contentEncoding: int32
+                  examples:
+                    - 1000000
+                end_time:
+                  type: string
+                  examples:
+                    - 2025-01-01
+              contentMediaType: multipart/form-data
+        required: false
+      responses:
+        "200":
+          description: ""
+          headers: {}
+      deprecated: false
+    parameters: []
+  /items/{itemId}:
+    parameters:
+      - in: path
+        name: itemId
+        schema:
+          type: integer
+        required: true
+        description: The item ID
+    get:
+      tags:
+        - ITEMS
+      summary: GET SINGLE ITEM
+      operationId: GETSINGLEITEM
+      parameters: []
+      responses:
+        "200":
+          description: ""
+          headers: {}
+      deprecated: false
+      security: []
+    put:
+      tags:
+        - ITEMS
+      summary: UPDATE ITEM
+      operationId: UPDATEITEM
+      parameters: []
+      requestBody:
+        description: ""
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/UPDATEITEMREQUEST"
+                - examples:
+                    - name: hulk_buster with Edith
+                      description: Iron body suit with blasters and big in size like hulk. Edith can control all the chip based system.
+                      starting_price: 1000000000
+                      current_price: 0
+                      image_url: hulk.png
+                      end_time: 2024-10-11
+              contentMediaType: application/json
+            example:
+              name: hulk_buster with Edith
+              description: Iron body suit with blasters and big in size like hulk. Edith can control all the chip based system.
+              starting_price: 1000000000
+              current_price: 0
+              image_url: hulk.png
+              end_time: 2024-10-11
+        required: true
+      responses:
+        "200":
+          description: ""
+          headers: {}
+      deprecated: false
+
+    delete:
+      tags:
+        - ITEMS
+      summary: DELETE ITEM
+      operationId: DELETEITEM
+      parameters: []
+      responses:
+        "200":
+          description: ""
+          headers: {}
+      deprecated: false
+
+  /items/{itemId}/bids:
+    parameters:
+      - in: path
+        name: itemId
+        schema:
+          type: integer
+        required: true
+        description: The item ID
+    post:
+      tags:
+        - BIDS
+      summary: CREATE BID
+      operationId: CREATEBID
+      parameters: []
+      requestBody:
+        description: ""
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/CREATEBIDREQUEST"
+                - examples:
+                    - bid_amount: 1000000002
+              contentMediaType: application/json
+            example:
+              bid_amount: 1000000002
+        required: true
+      responses:
+        "200":
+          description: ""
+          headers: {}
+      deprecated: false
+    get:
+      tags:
+        - BIDS
+      summary: GET ALL BIDS
+      operationId: GETALLBIDS
+      parameters: []
+      responses:
+        "200":
+          description: ""
+          headers: {}
+      deprecated: false
+      security: []
+
+  /notifications:
+    get:
+      tags:
+        - NOTIFICATIONS
+      summary: GET NOTIFICATIONS
+      operationId: GETNOTIFICATIONS
+      parameters: []
+      responses:
+        "200":
+          description: ""
+          headers: {}
+      deprecated: false
+    parameters: []
+  /notifications/mark-read:
+    post:
+      tags:
+        - NOTIFICATIONS
+      summary: MARK NOTIFICATIONS
+      operationId: MARKNOTIFICATIONS
+      parameters: []
+      requestBody:
+        description: ""
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/MARKNOTIFICATIONSREQUEST"
+                - examples:
+                    - mark: true
+              contentMediaType: application/json
+            example:
+              mark: true
+        required: true
+      responses:
+        "200":
+          description: ""
+          headers: {}
+      deprecated: false
+    parameters: []
+components:
+  schemas:
+    REGISTERREQUEST:
+      title: REGISTERREQUEST
+      required:
+        - username
+        - email
+        - password
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+      examples:
+        - username: King
+          email: king@gmail.com
+          password: "123456"
+    LOGINREQUEST:
+      title: LOGINREQUEST
+      required:
+        - username
+        - password
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      examples:
+        - username: Paul
+          password: "123456"
+    LOGOUTREQUEST:
+      title: LOGOUTREQUEST
+      required:
+        - name
+      type: object
+      properties:
+        name:
+          type: string
+      examples:
+        - name: logan
+    PASSWORDRESETREQUEST:
+      title: PASSWORDRESETREQUEST
+      required:
+        - email
+      type: object
+      properties:
+        email:
+          type: string
+      examples:
+        - email: paul@gmail.com
+    PASSWORDRESETTOKENREQUEST:
+      title: PASSWORDRESETTOKENREQUEST
+      required:
+        - newPassword
+      type: object
+      properties:
+        newPassword:
+          type: string
+      examples:
+        - newPassword: "1234346"
+    UPDATEITEMREQUEST:
+      title: UPDATEITEMREQUEST
+      required:
+        - name
+        - description
+        - starting_price
+        - current_price
+        - image_url
+        - end_time
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        starting_price:
+          type: integer
+          contentEncoding: int32
+        current_price:
+          type: integer
+          contentEncoding: int32
+        image_url:
+          type: string
+        end_time:
+          type: string
+      examples:
+        - name: hulk_buster with Edith
+          description: Iron body suit with blasters and big in size like hulk. Edith can control all the chip based system.
+          starting_price: 1000000000
+          current_price: 0
+          image_url: hulk.png
+          end_time: 2024-10-11
+    CREATEBIDREQUEST:
+      title: CREATEBIDREQUEST
+      required:
+        - bid_amount
+      type: object
+      properties:
+        bid_amount:
+          type: integer
+          contentEncoding: int32
+      examples:
+        - bid_amount: 1000000002
+    MARKNOTIFICATIONSREQUEST:
+      title: MARKNOTIFICATIONSREQUEST
+      required:
+        - mark
+      type: object
+      properties:
+        mark:
+          type: boolean
+      examples:
+        - mark: true
+  securitySchemes:
+    CookieAuth:
+      type: apiKey
+      in: cookie
+      name: jwt
+      description: Cookie-based authentication
+security:
+  - CookieAuth: []
+tags:
+  - name: USERS
+  - name: ITEMS
+  - name: BIDS
+  - name: NOTIFICATIONS
