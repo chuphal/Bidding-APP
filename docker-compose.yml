@@ -1,10 +1,12 @@
-version: "3"
+version: "3.8"
 services:
   postgres:
     image: "postgres"
     restart: always
     ports:
       - "5432:5432"
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
 
   app:
     build:
@@ -13,5 +15,15 @@ services:
       - "3000:3000"
     depends_on:
       - "postgres"
+
     environment:
-      NODE_ENV: development
+      - PORT=5000
+      - JWT_SECRET=
+      - NODE_ENV=development
+      - EXPIRES_IN=
+      - SERVICE_EMAIL=
+      - CLIENT_ID=
+      - CLIENT_SECRET=
+      - REDIRECT_URI=
+      - REFRESH_TOKEN=
+      - ACCESS_TOKEN=

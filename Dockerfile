@@ -1,4 +1,4 @@
-FROM node:18.7.0
+FROM node:latest
 
 WORKDIR /usr/src/app
 
@@ -10,4 +10,4 @@ RUN npm install
 COPY . .
 
 
-CMD [ "node", "server.js" ]
+CMD [ "npm", "start" ]

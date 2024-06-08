@@ -46,10 +46,10 @@ export const register = async (req, res) => {
       res
     );
     logger.info("Registered successfully");
-    const token = res.cookie.jwt;
+    // const token = req.cookie.jwt;
     res
       .status(StatusCodes.CREATED)
-      .json({ msg: "Registered successfully", user: user.rows[0], token });
+      .json({ msg: "Registered successfully", user: user.rows[0] });
   } catch (error) {
     logger.error(
       "User already exist,please provide unique name, email and password",
@@ -92,10 +92,10 @@ export const login = async (req, res) => {
   );
 
   logger.info("Login successfully");
-  const token = res.cookie.jwt;
+  // const token = req.cookie.jwt;
   res
     .status(StatusCodes.OK)
-    .json({ msg: "Login successfully", user: user.rows[0], token });
+    .json({ msg: "Login successfully", user: user.rows[0] });
 };
 
 export const logout = (req, res) => {
