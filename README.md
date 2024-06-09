@@ -125,6 +125,25 @@ The API documentation provides detailed information about the available endpoint
 * "npm test" - run mocha tests
 
 ### Testing
+#### a. socket test: -
+* Create two users and get their id's.
+* Create an item by one user.
+* Go to the: -
+```text
+backend/socket/socket.js 
+```
+* Uncomment the testing one and comment the above one.
+* Now, go to postman and create two client.
+* setup the message section.
+* setup the events : listening to "notification" event
+* Pass the cookie, jwt in the headers: - copy while login or register from cookie.
+* Now, connect both the client to the server.
+* Send "userId" as the listener to the server.
+* Now, go to events and turn on the "notification" listener.
+* Now, place the bid on the item (use the client who is not the owner of the item).
+* You can see real-time notification.
+
+#### b. Mocha test: -
 Run the test suite using:
 ```shell
 npm test
