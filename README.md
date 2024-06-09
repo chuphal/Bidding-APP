@@ -134,9 +134,15 @@ path -- backend/socket/socket.js
 ```
 * Uncomment the testing one and comment the above one.
 * Now, go to postman and create two client.
-* setup the message section.
+* setup the message section.: Provide id present in the db.
+![Screenshot (114)](https://github.com/chuphal/Bidding-App/assets/91324501/e9719f67-d9b3-4920-8ce2-5c50d1cb5a55)
+
 * setup the events : listening to "notification" event
+![Screenshot (115)](https://github.com/chuphal/Bidding-App/assets/91324501/e7fe2122-3b30-49c6-bb36-c68662b4509e)
+
 * Pass the cookie, jwt in the headers: - copy while login or register from cookie.
+![Screenshot (116)](https://github.com/chuphal/Bidding-App/assets/91324501/3dd18564-be3d-4f25-9e39-cecf0995edd7)
+
 * Now, connect both the client to the server.
 * Send "userId" as the listener to the server.
 * Now, go to events and turn on the "notification" listener.
