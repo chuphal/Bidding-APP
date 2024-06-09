@@ -218,7 +218,7 @@ export const deleteItem = async (req, res) => {
   if (isDelete.rowCount) {
     const imagePath = item.rows[0].image_url;
 
-    if (os.path.isfile(imagePath)) {
+    if (fs.existsSync(imagePath)) {
       fs.unlinkSync(imagePath);
       logger.info("image deleted");
       console.log("image deleted");
