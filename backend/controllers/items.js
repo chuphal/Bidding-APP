@@ -153,7 +153,8 @@ export const updateItem = async (req, res) => {
     starting_price,
     current_price,
     end_time,
-    req.body
+    req.body,
+    req
   );
   if (!name) {
     logger.error("Name of the item, can't be left empty");
