@@ -67,7 +67,7 @@ ACCESS_TOKEN=your_access_token
 ### 4. After setting up the pg server:
 Run the queries:
 ```text
-./backend/db/queries.sql
+path -- backend/db/queries.sql
 ```
 
 #### 5. Start the Server
@@ -130,7 +130,7 @@ The API documentation provides detailed information about the available endpoint
 * Create an item by one user.
 * Go to the: -
 ```text
-backend/socket/socket.js 
+path -- backend/socket/socket.js 
 ```
 * Uncomment the testing one and comment the above one.
 * Now, go to postman and create two client.
