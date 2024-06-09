@@ -1,12 +1,27 @@
 import { StatusCodes } from "http-status-codes";
 import pool from "../db/dbConfig.js";
-import { BadRequestError, CustomAPIError } from "../errors/index.js";
+import {
+  BadRequestError,
+  CustomAPIError,
+  NotFoundError,
+} from "../errors/index.js";
 import { io, getReceiverSocketId } from "../socket/socket.js";
 import { logger } from "../logger/logger.js";
 
 export const getAllBids = async (req, res) => {
   try {
     const { itemId } = req.params;
+
+    // check for item ...
+    const isItem = await pool.query(
+      `Select * FROM auction_items WHERE id =$1 `,
+      [itemId]
+    );
+
+    if (isItem.rowCount === 0) {
+      logger.error(`There is not item present with id: ${itemId}`);
+      throw new NotFoundError(`There is not item present with id: ${itemId}`);
+    }
 
     const totalBids = await pool.query(
       `SELECT * FROM bids WHERE item_id = $1 ORDER BY created_at DESC`,

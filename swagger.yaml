@@ -181,7 +181,7 @@ paths:
         - name: limit
           in: query
           description: ""
-          required: true
+          required: false
           style: form
           explode: true
           schema:
@@ -192,7 +192,7 @@ paths:
         - name: page
           in: query
           description: ""
-          required: true
+          required: false
           style: form
           explode: true
           schema:
@@ -218,7 +218,6 @@ paths:
             encoding: {}
             schema:
               required:
-                - file
                 - name
                 - description
                 - starting_price
@@ -226,7 +225,7 @@ paths:
               type: object
               properties:
                 file:
-                  type: string
+                  type: file
                   contentEncoding: base64
                 name:
                   type: string

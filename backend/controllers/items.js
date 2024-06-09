@@ -4,6 +4,7 @@ import { BadRequestError } from "../errors/bad-request.js";
 import { CustomAPIError } from "../errors/custom-api.js";
 import fs from "fs";
 import { logger } from "../logger/logger.js";
+import { NotFoundError } from "../errors/not-found.js";
 export const getAllItems = async (req, res) => {
   const { search, status, page = 1, limit = 5 } = req.query;
 
@@ -192,7 +193,7 @@ export const deleteItem = async (req, res) => {
 
   if (item.rowCount == 0) {
     logger.error(`No item with id: ${id}`);
-    throw new BadRequestError(`No item with id: ${id}`);
+    throw new NotFoundError(`No item with id: ${id}`);
   }
 
   const { userId, username, role } = req.user;
@@ -219,7 +220,7 @@ export const deleteItem = async (req, res) => {
 
     fs.unlinkSync(imagePath, (error) => {
       if (error) {
-        logger.error("image file not deleted", error);
+        logger.error("image file not deleted");
         console.log("image file not deleted");
       } else {
         logger.info("image deleted successfully");
