@@ -147,7 +147,14 @@ export const updateItem = async (req, res) => {
     req.body;
 
   const image_url = req.file ? req.file.path : "";
-  console.log(name, description, starting_price, current_price, end_time);
+  console.log(
+    name,
+    description,
+    starting_price,
+    current_price,
+    end_time,
+    req.body
+  );
   if (!name) {
     logger.error("Name of the item, can't be left empty");
     throw new BadRequestError("Name of the item, can't be left empty");
