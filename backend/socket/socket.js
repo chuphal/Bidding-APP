@@ -15,6 +15,7 @@ const userSocketMap = {};
 
 io.on("connection", (socket) => {
   console.log("A new user has connected. Socket_id : ", socket.id);
+  // comment it while testing
   const userId = socket.handshake.query.user_id || null;
 
   // for testing in postman
