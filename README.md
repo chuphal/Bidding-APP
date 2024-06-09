@@ -125,6 +125,7 @@ The API documentation provides detailed information about the available endpoint
 * "npm test" - run mocha tests
 
 ### Testing
+
 #### a. socket test: -
 * Create two users and get their id's.
 * Create an item by one user.
@@ -148,6 +149,7 @@ path -- backend/socket/socket.js
 * Now, go to events and turn on the "notification" listener.
 * Now, place the bid on the item (use the client who is not the owner of the item).
 * You can see real-time notification.
+
 
 #### b. Mocha test: -
 Run the test suite using:
