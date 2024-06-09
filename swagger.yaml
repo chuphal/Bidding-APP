@@ -281,43 +281,31 @@ paths:
       requestBody:
         description: ""
         content:
-          multipart/form-data:
+          application/json:
             schema:
-              required:
-                - name
-                - description
-                - starting_price
-                - end_time
-              type: object
-              properties:
-                file:
-                  type: file
-                  contentEncoding: base64
-                name:
-                  type: string
-                  examples:
-                    - hulk_buster with Edith
-                description:
-                  type: string
-                  examples:
-                    - Iron body suit with blasters and big in size like hulk. Edith can control all the chip based system.
-                starting_price:
-                  type: integer
-                  contentEncoding: int32
-                  examples:
-                    - 1000000000
-                end_time:
-                  type: string
-                  examples:
-                    - 2025-01-01
-              contentMediaType: multipart/form-data
-        required: false
+              allOf:
+                - $ref: "#/components/schemas/UPDATEITEMREQUEST"
+                - examples:
+                    - name: hulk_buster with Edith
+                      description: Iron body suit with blasters and big in size like hulk. Edith can control all the chip based system.
+                      starting_price: 1000000000
+                      current_price: 0
+                      image_url: hulk.png
+                      end_time: 2024-10-11
+              contentMediaType: application/json
+            example:
+              name: hulk_buster with Edith
+              description: Iron body suit with blasters and big in size like hulk. Edith can control all the chip based system.
+              starting_price: 1000000000
+              current_price: 0
+              image_url: hulk.png
+              end_time: 2024-10-11
+        required: true
       responses:
         "200":
           description: ""
           headers: {}
       deprecated: false
-    parameters: []
 
     delete:
       tags:
