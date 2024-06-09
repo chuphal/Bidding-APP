@@ -147,6 +147,7 @@ export const passwordReset = async (req, res) => {
     logger.info(`Reset link has been sent. Please check your email. .`);
     res.status(StatusCodes.OK).json({
       msg: `Reset link has been sent. Please check your email. .`,
+      resetToken,
     });
   } catch (error) {
     logger.error("Error while sending mail", error);

@@ -50,18 +50,23 @@ export const getAllItems = async (req, res) => {
 };
 
 export const getSingleItem = async (req, res) => {
-  const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-  const item = await pool.query(`SELECT * FROM auction_items WHERE id = $1`, [
-    id,
-  ]);
+    const item = await pool.query(`SELECT * FROM auction_items WHERE id = $1`, [
+      id,
+    ]);
 
-  if (item.rowCount === 0) {
-    logger.error(`No item with id ${id}`);
-    throw new BadRequestError(`No item with id ${id}`);
+    if (item.rowCount === 0) {
+      logger.error(`No item with id ${id}`);
+      throw new BadRequestError(`No item with id ${id}`);
+    }
+    logger.info("Successfuly get the item");
+    res.status(StatusCodes.OK).json({ item: item.rows[0] });
+  } catch (error) {
+    logger.error("internal server error", error);
+    throw new CustomAPIError("Server error", StatusCodes.INTERNAL_SERVER_ERROR);
   }
-  logger.info("Successfuly get the item");
-  res.status(StatusCodes.OK).json({ item: item.rows[0] });
 };
 
 export const createItem = async (req, res) => {
@@ -223,8 +228,8 @@ export const deleteItem = async (req, res) => {
       logger.info("image deleted");
       console.log("image deleted");
     } else {
-      logger.info("image not deleted");
-      console.log("image not deleted");
+      logger.info("image not found");
+      console.log("image not found");
     }
   }
 
